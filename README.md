@@ -43,11 +43,6 @@ You can modify `sendKalaPacket()` to send specific data:
 bool KNet::sendKalaPacket(const char* destIP, const char* customData);
 ```
 
-## System Data Transmission
-K-Net automatically collects and sends:
-- **System Uptime**
-- **CPU Usage**
-- **Memory Info**
 
 ## Example Output
 ```bash
