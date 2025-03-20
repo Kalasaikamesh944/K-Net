@@ -26,7 +26,20 @@ SOFTWARE.
 #include <iostream>
 #include <cstring>
 int main() {
-    const char* message = "Hello from Kala Protocol! this is encripted message lets make private talk .................";
+    const char* message = R"(
+[KALA PROTOCOL - SECURE COMMUNICATION SYSTEM]
+=============================================
+* Welcome to Kala Protocol v1.0 *
+- Encrypted Communication: AES-256-CBC
+- Secure Hashing: SHA-256 Integrity Checks
+- Packet-Level Encryption: End-to-End Security
+- Real-Time Packet Viewer: Advanced Hex Dump
+- Dynamic Animation: Pro Hacker Interface
+- Cross-Platform: Linux, Windows, macOS
+- Open Source: MIT Licensed
+=============================================
+[INFO] Initializing Kala Protocol... Ready!
+)";
     uint8_t encryptedData[MAX_PACKET_SIZE];
     uint32_t encryptedLen;
 
@@ -42,12 +55,11 @@ int main() {
     packet.hash = KNet::computeHash(encryptedData, encryptedLen);
     packet.checksum = KNet::computeChecksum(packet);
 
-   while (true){
+
       if (!KNet::sendPacket("192.168.55.16", SPECIAL_PORT, packet)) {
          std::cerr << "Failed to send packet!" << std::endl;
          return -1;
       }
 
       std::cout << "Packet sent successfully!" << std::endl;
-  }
 }

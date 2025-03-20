@@ -32,6 +32,8 @@ SOFTWARE.
 #include <sys/socket.h>
 #include <unistd.h>
 #include <iomanip>
+#include <thread>
+#include <chrono>
 
 // ANSI color codes
 #define COLOR_RESET   "\033[0m"
@@ -52,26 +54,42 @@ static uint8_t aesIV[AES_IV_SIZE] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
 };
 
-// Function to print data in xxd-style with colors
+// Function to simulate a loading animation
+void loadingAnimation(const std::string& message, int durationMs) {
+    std::cout << COLOR_CYAN << message << COLOR_RESET;
+    for (int i = 0; i < 3; ++i) {
+        std::cout << ".";
+        std::cout.flush();
+        std::this_thread::sleep_for(std::chrono::milliseconds(durationMs / 3));
+    }
+    std::cout << std::endl;
+}
+
+// Function to print data in xxd-style with colors and animations
 void printXXDStyleHexDump(const uint8_t* data, size_t size) {
+    std::cout << COLOR_MAGENTA << "[PACKET DATA]" << COLOR_RESET << std::endl;
     for (size_t i = 0; i < size; i += 16) {
-        // Print offset
+        // Print offset with animation
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         std::cout << COLOR_CYAN << std::setw(8) << std::setfill('0') << std::hex << i << ": " << COLOR_RESET;
         
-        // Print hex values
+        // Print hex values with animation
         for (size_t j = 0; j < 16; j++) {
-            if (i + j < size)
+            if (i + j < size) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 std::cout << COLOR_GREEN << std::setw(2) << std::setfill('0') << std::hex << (int)data[i + j] << " " << COLOR_RESET;
-            else
+            } else {
                 std::cout << "   "; // Padding for alignment
+            }
         }
 
         std::cout << " ";
 
-        // Print ASCII representation
+        // Print ASCII representation with animation
         for (size_t j = 0; j < 16; j++) {
             if (i + j < size) {
                 char c = data[i + j];
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 std::cout << (std::isprint(c) ? COLOR_YELLOW + std::string(1, c) + COLOR_RESET : COLOR_RED + std::string(".") + COLOR_RESET);
             }
         }
@@ -141,6 +159,7 @@ bool KNet::sendPacket(const char* serverIP, int port, const KalaPacket& packet) 
     serverAddr.sin_port = htons(port);
     inet_pton(AF_INET, serverIP, &serverAddr.sin_addr);
 
+    loadingAnimation("[INFO] Sending packet", 500);
     if (sendto(sock, &packet, sizeof(packet), 0, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
         std::cerr << COLOR_RED << "[ERROR] Packet send failed!" << COLOR_RESET << std::endl;
         close(sock);
@@ -166,10 +185,10 @@ bool KNet::receivePacket(int port, KalaPacket& packet) {
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     bind(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 
-    std::cout << COLOR_CYAN << "[INFO] Waiting for packets on port " << port << "..." << COLOR_RESET << std::endl;
+    loadingAnimation("[INFO] Waiting for packets", 500);
     recv(sock, &packet, sizeof(packet), 0);
 
-    std::cout << COLOR_MAGENTA << "[INFO] Received packet From Kala Protocal :" << COLOR_RESET << std::endl;
+    std::cout << COLOR_MAGENTA << "[INFO] Received packet From Kala Protocol:" << COLOR_RESET << std::endl;
     printXXDStyleHexDump(reinterpret_cast<const uint8_t*>(&packet), sizeof(packet));
 
     close(sock);

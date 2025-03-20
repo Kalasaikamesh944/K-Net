@@ -26,7 +26,7 @@ SOFTWARE.
 #include <iostream>
 
 int main() {
-    while (true){
+
          KalaPacket packet;
          if (!KNet::receivePacket(SPECIAL_PORT, packet)) {
              std::cerr << "Failed to receive packet!" << std::endl;
@@ -42,5 +42,5 @@ int main() {
          }
 
          std::cout << "Decrypted Data : " << std::string((char*)decryptedData, decryptedLen) << std::endl;
- }
+
 }
