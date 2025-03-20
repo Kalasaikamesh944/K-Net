@@ -67,7 +67,7 @@ SOFTWARE.
 #include <iostream>
 #include <cstring>
 int main() {
-    const char* message = "Hello from Kala Protocol!";
+    const char* message = "Hello from Kala Protocol! this is encripted message lets make private talk .................";
     uint8_t encryptedData[MAX_PACKET_SIZE];
     uint32_t encryptedLen;
 
@@ -83,12 +83,14 @@ int main() {
     packet.hash = KNet::computeHash(encryptedData, encryptedLen);
     packet.checksum = KNet::computeChecksum(packet);
 
-    if (!KNet::sendPacket("127.0.0.1", SPECIAL_PORT, packet)) {
-        std::cerr << "Failed to send packet!" << std::endl;
-        return -1;
-    }
+   while (true){
+      if (!KNet::sendPacket("192.168.55.16", SPECIAL_PORT, packet)) {
+         std::cerr << "Failed to send packet!" << std::endl;
+         return -1;
+      }
 
-    std::cout << "Packet sent successfully!" << std::endl;
+      std::cout << "Packet sent successfully!" << std::endl;
+  }
 }
 
 ```
@@ -121,21 +123,23 @@ SOFTWARE.
 #include <iostream>
 
 int main() {
-    KalaPacket packet;
-    if (!KNet::receivePacket(SPECIAL_PORT, packet)) {
-        std::cerr << "Failed to receive packet!" << std::endl;
-        return -1;
-    }
+    while (true){
+         KalaPacket packet;
+         if (!KNet::receivePacket(SPECIAL_PORT, packet)) {
+             std::cerr << "Failed to receive packet!" << std::endl;
+             return -1;
+         }
 
-    uint8_t decryptedData[MAX_PACKET_SIZE];
-    uint32_t decryptedLen;
+         uint8_t decryptedData[MAX_PACKET_SIZE];
+         uint32_t decryptedLen;
 
-    if (!KNet::decryptData(packet.encryptedData, packet.encryptedLen, decryptedData, decryptedLen)) {
-        std::cerr << "Decryption failed!" << std::endl;
-        return -1;
-    }
+         if (!KNet::decryptData(packet.encryptedData, packet.encryptedLen, decryptedData, decryptedLen)) {
+            std::cerr << "Decryption failed!" << std::endl;
+            return -1;
+         }
 
-    std::cout << "Received Message: " << std::string((char*)decryptedData, decryptedLen) << std::endl;
+         std::cout << "Decrypted Data : " << std::string((char*)decryptedData, decryptedLen) << std::endl;
+ }
 }
 
 
