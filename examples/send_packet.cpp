@@ -21,21 +21,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ***/    
-#include <iostream>
-#include <sstream>
-#include <cstdlib>
-#include <unistd.h>
+
 #include "knet.h"
-
+#include <iostream>
+#include <cstring>
 int main() {
-    KNet knet;
-    const char* destIP = "192.168.55.16";
+    const char* message = "Hello from Kala Protocol! this is encripted message lets make private talk .................";
+    uint8_t encryptedData[MAX_PACKET_SIZE];
+    uint32_t encryptedLen;
 
-    while (true) {
-        
-        knet.sendKalaPacket(destIP,"This is kala Packet");
-        sleep(5); // Send every 5 seconds
+    if (!KNet::encryptData((uint8_t*)message, strlen(message), encryptedData, encryptedLen)) {
+        std::cerr << "Encryption failed!" << std::endl;
+        return -1;
     }
 
-    return 0;
+    KalaPacket packet;
+    packet.timeStamp = time(NULL);
+    packet.encryptedLen = encryptedLen;
+    memcpy(packet.encryptedData, encryptedData, encryptedLen);
+    packet.hash = KNet::computeHash(encryptedData, encryptedLen);
+    packet.checksum = KNet::computeChecksum(packet);
+
+   while (true){
+      if (!KNet::sendPacket("192.168.55.16", SPECIAL_PORT, packet)) {
+         std::cerr << "Failed to send packet!" << std::endl;
+         return -1;
+      }
+
+      std::cout << "Packet sent successfully!" << std::endl;
+  }
 }

@@ -21,9 +21,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ***/    
+
 #include "knet.h"
+#include <iostream>
 
 int main() {
-    KNet::sniffKalaPackets();
-    return 0;
+    while (true){
+         KalaPacket packet;
+         if (!KNet::receivePacket(SPECIAL_PORT, packet)) {
+             std::cerr << "Failed to receive packet!" << std::endl;
+             return -1;
+         }
+
+         uint8_t decryptedData[MAX_PACKET_SIZE];
+         uint32_t decryptedLen;
+
+         if (!KNet::decryptData(packet.encryptedData, packet.encryptedLen, decryptedData, decryptedLen)) {
+            std::cerr << "Decryption failed!" << std::endl;
+            return -1;
+         }
+
+         std::cout << "Decrypted Data : " << std::string((char*)decryptedData, decryptedLen) << std::endl;
+ }
 }

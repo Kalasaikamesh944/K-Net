@@ -1,20 +1,47 @@
-CC = g++
-CFLAGS = -Wall -O2 -Iinclude
-LDFLAGS = -lcrypto
+# Compiler and flags
+CXX = g++
+CXXFLAGS = -Wall -Wextra -std=c++17 -O2 -Iinclude
+LDFLAGS = -L. -lknet -lcrypto
 
-all: libknet.a send_packet receive_packet
+# Directories
+SRC_DIR = src
+BUILD_DIR = build
+EXAMPLES_DIR = examples
+INCLUDE_DIR = include
 
-libknet.a: src/knet.o
-	ar rcs libknet.a src/knet.o
+# Library and executables
+LIBKNET = libknet.a
+SEND_PACKET = send_packet
+RECEIVE_PACKET = receive_packet
 
-src/knet.o: src/knet.cpp include/knet.h
-	$(CC) $(CFLAGS) -c src/knet.cpp -o src/knet.o $(LDFLAGS)
+# Source and object files
+SRC_FILES = $(SRC_DIR)/knet.cpp
+OBJ_FILES = $(BUILD_DIR)/knet.o
 
-send_packet: examples/send_packet.cpp libknet.a
-	$(CC) $(CFLAGS) examples/send_packet.cpp -o send_packet -L. -lknet $(LDFLAGS)
+# Example programs
+SEND_SRC = $(EXAMPLES_DIR)/send_packet.cpp
+RECEIVE_SRC = $(EXAMPLES_DIR)/receive_packet.cpp
 
-receive_packet: examples/receive_packet.cpp libknet.a
-	$(CC) $(CFLAGS) examples/receive_packet.cpp -o receive_packet -L. -lknet $(LDFLAGS)
+# Default target
+all: $(LIBKNET) $(SEND_PACKET) $(RECEIVE_PACKET)
 
+# Compile KNet library
+$(LIBKNET): $(OBJ_FILES)
+	ar rcs $@ $^
+
+# Compile KNet object files
+$(BUILD_DIR)/knet.o: $(SRC_FILES) $(INCLUDE_DIR)/knet.h
+	mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Compile example programs
+$(SEND_PACKET): $(SEND_SRC) $(LIBKNET)
+	$(CXX) $(CXXFLAGS) $< -o $@ -L. -lknet -lcrypto
+
+$(RECEIVE_PACKET): $(RECEIVE_SRC) $(LIBKNET)
+	$(CXX) $(CXXFLAGS) $< -o $@ -L. -lknet -lcrypto
+
+# Clean build artifacts
 clean:
-	rm -f src/*.o libknet.a send_packet receive_packet
+	rm -rf $(BUILD_DIR) $(LIBKNET) $(SEND_PACKET) $(RECEIVE_PACKET)
+
