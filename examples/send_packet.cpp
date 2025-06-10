@@ -66,7 +66,8 @@ void sendMessage(const std::string& ip) {
         packet.hash = KNet::computeHash(encryptedData, encryptedLen);
         packet.checksum = KNet::computeChecksum(packet);
 
-        if (!KNet::sendPacket(ip, SPECIAL_PORT, packet)) {
+        // FIX: Convert std::string to const char*
+        if (!KNet::sendPacket(ip.c_str(), SPECIAL_PORT, packet)) {
             std::cerr << RED << "Failed to send packet!" << RESET << std::endl;
             continue;
         }
